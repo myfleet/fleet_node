@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const pool = require('./config/db'); // Database configuration file
+const masterRouter = require('./routes/masterRoutes');
 
 // Initialize Express app
 const app = express();
@@ -52,6 +53,10 @@ initializeTables().catch(err => console.error('Failed to initialize tables:', er
 
 // API Routes
 app.use('/api', userRoutes);
+
+// master Routes
+
+app.use('/api', masterRouter)
 
 // Start the server
 app.listen(port, () => {
