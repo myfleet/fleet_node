@@ -116,4 +116,100 @@ const driverMaster = async (req, res) => {
     }
 };
 
-module.exports = { vehicalMaster, driverMaster };
+
+
+
+const createTrip = async (req, res) => {
+  const {
+    // Trip Info
+    trip_date,
+    trip_type,
+    from_location,
+    to_location,
+    distance_km,
+    estimated_duration,
+    
+    // Vehicle Details
+    vehicle_type,
+    vehicle_number,
+    driver_name,
+    driver_contact,
+    capacity,
+    
+    // Payment & Pricing
+    base_price,
+    distance_charges = 0,
+    additional_charges = 0,
+    advance_payment = 0,
+    payment_mode = 'cash',
+    payment_status = 'unpaid',
+    
+    // Customer Details
+    customer_name,
+    phone_number,
+    email,
+    booking_source,
+    
+    // Other Fields
+    trip_status = 'planned',
+    trip_notes,
+    created_by
+  } = req.body;
+
+  // Basic validation
+  if (!trip_date || !from_location || !to_location || !vehicle_type || !vehicle_number || 
+      !driver_name || !driver_contact || !base_price || !customer_name || !phone_number) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const query = `
+      INSERT INTO trip_master (
+        trip_date, trip_type, from_location, to_location, distance_km, estimated_duration,
+        vehicle_type, vehicle_number, driver_name, driver_contact, capacity,
+        base_price, distance_charges, additional_charges, advance_payment, payment_mode, payment_status,
+        customer_name, phone_number, email, booking_source,
+        trip_status, trip_notes, created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+      RETURNING *;
+    `;
+
+    const values = [
+      trip_date,
+      trip_type,
+      from_location,
+      to_location,
+      distance_km,
+      estimated_duration,
+      vehicle_type,
+      vehicle_number,
+      driver_name,
+      driver_contact,
+      capacity,
+      base_price,
+      distance_charges,
+      additional_charges,
+      advance_payment,
+      payment_mode,
+      payment_status,
+      customer_name,
+      phone_number,
+      email,
+      booking_source,
+      trip_status,
+      trip_notes,
+      created_by
+    ];
+
+    const { rows } = await pool.query(query, values);
+    res.status(201).json(rows[0]);
+    
+  } catch (error) {
+    console.error('Error creating trip:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+};
+
+
+
+module.exports = { vehicalMaster, driverMaster , createTrip };
