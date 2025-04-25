@@ -1,7 +1,5 @@
 
-
-
-const pool = require('../config/db'); // PostgreSQL connection pool
+const pool = require('../config/db'); 
 
 const vehicalMaster = async (req, res) => {
     try {
@@ -116,9 +114,6 @@ const driverMaster = async (req, res) => {
     }
 };
 
-
-
-
 const createTrip = async (req, res) => {
   const {
     // Trip Info
@@ -210,6 +205,38 @@ const createTrip = async (req, res) => {
   }
 };
 
+const getAllTrips = async (req, res) => {
+    try {
+      const query = 'SELECT * FROM trip_master ORDER BY trip_date DESC;';
+      const { rows } = await pool.query(query);
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error('Error fetching trips:', error);
+      res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+  };
 
-
-module.exports = { vehicalMaster, driverMaster , createTrip };
+  const getTripsByVehicleNumber = async (req, res) => {
+    const { vehicle_number } = req.params;
+  
+    if (!vehicle_number) {
+      return res.status(400).json({ error: 'Vehicle number is required' });
+    }
+  
+    try {
+      const query = 'SELECT * FROM trip_master WHERE vehicle_number = $1 ORDER BY trip_date DESC;';
+      const { rows } = await pool.query(query, [vehicle_number]);
+  
+      if (rows.length === 0) {
+        return res.status(404).json({ message: 'No trips found for this vehicle number' });
+      }
+  
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error('Error fetching trips by vehicle number:', error);
+      res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+  };
+  
+  
+module.exports = { vehicalMaster, driverMaster , createTrip,getAllTrips,getTripsByVehicleNumber };
